@@ -1,7 +1,9 @@
 // use std::error::Error;
+use std::fs::File;
+use std::path::Path;
 use clap::{Subcommand, ValueEnum};
 use crate::structs::root::Args;
-use nu_ansi_term::Color::{Blue, Cyan, Yellow};
+use nu_ansi_term::Color::{ Red, Blue, Cyan, Yellow };
 
 #[derive(Debug, Subcommand)]
 pub enum Creates {
@@ -29,7 +31,6 @@ pub fn run (args: &Args){
 
     match &args.create {
         Some(Creates::Create { mode, name}) => {
-            println!("'myapp add' was used, name is: {:?}", mode);
             match mode {
                 Some(o) => {
                     println!("Folder {}", name);
@@ -40,13 +41,13 @@ pub fn run (args: &Args){
                         }
                         Mode::File => {
                             // 创建文件
-                            println!("File {}", name);
+                            create_file(&name);
                         }
                     }
                 }
                 None => {
                     // 默认创建文件
-                    println!("None Create File {}", Blue.paint(name));
+                    create_file(&name);
                 }
             }
 
@@ -56,18 +57,21 @@ pub fn run (args: &Args){
 }
 
 
-// match &args.create {
-//   Some(Creates::Create { mode, name}) => {
-//       println!("'myapp add' was used, name is: {:?}", mode);
-//       match mode {
-//           Mode::Folder => {
-//               println!("Folder {}", name);
-//           }
-//           Mode::File => {
-//               println!("File {}", name);
-//           }
-//       }
-
-//   }
-//   None => {}
-// }
+pub fn create_file (name: &str) {
+    let is_exists = Path::new(name).exists();
+    if is_exists {
+        println!("{} is exists", Red.paint(name));
+    } else {
+        let file = File::create(name);
+        match file {
+            Ok(_f) => {
+                // println!("file :: {:?}.", f);
+                println!("{} created successfully", Blue.paint(name));
+            }
+            Err(err) => {
+                println!("Error :: {:?}.", err.to_string());
+                println!("{} created failed", Red.paint(name));
+            }
+        }
+    }
+}
