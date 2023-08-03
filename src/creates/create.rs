@@ -1,9 +1,15 @@
 // use std::error::Error;
-use std::fs::File;
+// use std::ffi::OsStr;
+use std::fs::{ self, File };
 use std::path::Path;
 use clap::{Subcommand, ValueEnum};
 use crate::structs::root::Args;
-use nu_ansi_term::Color::{ Red, Blue, Cyan, Yellow };
+use nu_ansi_term::Color::{
+    Red,
+    Blue,
+    // Cyan,
+    // Yellow
+};
 
 #[derive(Debug, Subcommand)]
 pub enum Creates {
@@ -41,13 +47,13 @@ pub fn run (args: &Args){
                         }
                         Mode::File => {
                             // 创建文件
-                            create_file(&name);
+                            create_file_map(&name);
                         }
                     }
                 }
                 None => {
                     // 默认创建文件
-                    create_file(&name);
+                    create_file_map(&name);
                 }
             }
 
@@ -57,21 +63,73 @@ pub fn run (args: &Args){
 }
 
 
+pub fn create_file_map (name: &str) {
+    let path = Path::new(name);
+    let is_exists = path.exists();
+    let is_file = path.is_file();
+    let is_dir = path.is_dir();
+    let is_relative = path.is_relative();
+    let parent = path.parent();
+    let file_name = path.file_name();
+    let file_stem = path.file_stem();
+    let extension = path.extension();
+    // println!("{} is {}", Red.paint(name), is_file);
+    println!("is_file = {}", is_file);
+    println!("is_exists = {}", is_exists);
+    println!("is_dir = {}", is_dir);
+    println!("is_relative = {}", is_relative);
+    println!("{:?} __ {:?} __ {:?} __ {:?}", parent, file_name, file_stem, extension);
+
+    match parent {
+        Some(p) => {
+            println!("parent.is_file = {}", p.is_file());
+            println!("parent.is_exists = {}", p.exists());
+            println!("parent.is_dir = {}", p.is_dir());
+            if p.to_str() == Some("") || p.to_str() == Some(".") {
+                // 父级前路径为空，且文件不存在
+                if !is_exists {
+                    create_file(name);
+                } else {
+                    if !is_file && is_dir {
+                        create_file(name);
+                    }
+                }
+            } else {
+                if !p.exists() {
+                    // 父级前路径为不为空，未创建文件夹
+                    let d = fs::create_dir_all(p);
+                    match d {
+                        Ok(_f) => {
+                            create_file(name);
+                        }
+                        Err(err) => {
+                            println!("Error :: {:?}.", Red.paint(err.to_string()));
+                        }
+                    }
+                } else {
+                    // 父级前路径为不为空，已创建文件夹
+                    if !is_exists {
+                        create_file(name);
+                    }
+                }
+            }
+        }
+        None => {
+            println!("parent = None");
+        }
+    }
+}
+
 pub fn create_file (name: &str) {
-    let is_exists = Path::new(name).exists();
-    if is_exists {
-        println!("{} is exists", Red.paint(name));
-    } else {
-        let file = File::create(name);
-        match file {
-            Ok(_f) => {
-                // println!("file :: {:?}.", f);
-                println!("{} created successfully", Blue.paint(name));
-            }
-            Err(err) => {
-                println!("Error :: {:?}.", err.to_string());
-                println!("{} created failed", Red.paint(name));
-            }
+    let file = File::create(name);
+    match file {
+        Ok(_f) => {
+            // println!("file :: {:?}.", _f);
+            println!("{} created successfully", Blue.paint(name));
+        }
+        Err(err) => {
+            println!("Error :: {:?}.", err.to_string());
+            println!("{} created failed", Red.paint(name));
         }
     }
 }
