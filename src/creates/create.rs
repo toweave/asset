@@ -39,11 +39,24 @@ pub fn run (args: &Args){
         Some(Creates::Create { mode, name}) => {
             match mode {
                 Some(o) => {
-                    println!("Folder {}", name);
+                    println!("name = {}", name);
                     match o {
                         Mode::Folder => {
                             // 创建文件夹
-                            println!("Folder {}", name);
+                            let path = Path::new(name);
+                            if path.exists() {
+                                println!("Folder {} 已存在", name);
+                            } else {
+                                let d = fs::create_dir_all(path);
+                                match d {
+                                    Ok(_f) => {
+                                        println!("{} 文件夹创建成功", Blue.paint(name));
+                                    }
+                                    Err(err) => {
+                                        println!("Error :: {:?}.", Red.paint(err.to_string()));
+                                    }
+                                }
+                            }
                         }
                         Mode::File => {
                             // 创建文件
