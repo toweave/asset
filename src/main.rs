@@ -1,8 +1,7 @@
 use clap::{Parser};
-use asset::structs::root::Args;
-use asset::creates::create;
+use asset::structs::root::{Args, run};
 
 fn main() {
     let args = Args::parse();
-    create::run(&args);
+    run(&args);
 }

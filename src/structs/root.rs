@@ -1,5 +1,7 @@
-use clap::{Parser};
-use crate::creates::create::Creates;
+
+use clap::{Parser, Subcommand};
+use crate::creates::create::{  Mode, create_mode };
+// use crate::deletes::delete::Deletes;
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
 #[command(name = "asset")]
@@ -14,5 +16,39 @@ pub struct Args {
 
     // #[arg(short, long)]
     #[command(subcommand)]
-    pub create: Option<Creates>,
+    pub commands: Option<Commands>,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum Commands {
+    /// Create file or folder to current path.
+    Create {
+        mode: Option<Mode>,
+
+        #[arg(short, long)]
+        name: String
+    },
+
+    Delete {
+        mode: Option<Mode>,
+
+        #[arg(short, long)]
+        name: String
+    },
+}
+
+pub fn run (args: &Args){
+    println!("Hello {}!", &args.name.clone().unwrap_or("world".into()));
+
+    if let Some(commands) = &args.commands {
+        match commands {
+            Commands::Create { mode, name} => {
+                create_mode(mode, name);
+            }
+            Commands::Delete { .. } => {
+                println!("Commands::Delete");
+            }
+        }
+    }
+
 }
