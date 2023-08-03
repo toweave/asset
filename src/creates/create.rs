@@ -22,7 +22,7 @@ pub enum Mode {
     File,
 }
 
-pub fn create_mode (mode: &Option<Mode>, name: &str) {
+pub fn execution_mode (mode: &Option<Mode>, name: &str) {
     println!("Hello mode {:?}!", mode);
     println!("Hello name {:?}!", name);
 
