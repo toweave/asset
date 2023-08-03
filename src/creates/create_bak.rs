@@ -79,38 +79,43 @@ pub fn create_file_map (name: &str) {
     println!("is_dir = {}", is_dir);
     println!("is_relative = {}", is_relative);
     println!("{:?} __ {:?} __ {:?} __ {:?}", parent, file_name, file_stem, extension);
-    if is_exists {
-        if is_dir {
-            println!("{}", Red.paint("已存在同名文件夹"));
-        }
-    } else {
-        match parent {
-            Some(p) => {
-                println!("parent.is_file = {}", p.is_file());
-                println!("parent.is_exists = {}", p.exists());
-                println!("parent.is_dir = {}", p.is_dir());
-                if p.to_str() == Some("") || p.to_str() == Some(".") {
-                    // 父级前路径为空，且文件不存在
+
+    match parent {
+        Some(p) => {
+            println!("parent.is_file = {}", p.is_file());
+            println!("parent.is_exists = {}", p.exists());
+            println!("parent.is_dir = {}", p.is_dir());
+            if p.to_str() == Some("") || p.to_str() == Some(".") {
+                // 父级前路径为空，且文件不存在
+                if !is_exists {
                     create_file(name);
                 } else {
-                    if p.is_dir() {
+                    if !is_file && is_dir {
                         create_file(name);
-                    } else {
-                        let d = fs::create_dir_all(p);
-                        match d {
-                            Ok(_f) => {
-                                create_file(name);
-                            }
-                            Err(err) => {
-                                println!("Error :: {:?}.", Red.paint(err.to_string()));
-                            }
+                    }
+                }
+            } else {
+                if !p.exists() {
+                    // 父级前路径为不为空，未创建文件夹
+                    let d = fs::create_dir_all(p);
+                    match d {
+                        Ok(_f) => {
+                            create_file(name);
                         }
+                        Err(err) => {
+                            println!("Error :: {:?}.", Red.paint(err.to_string()));
+                        }
+                    }
+                } else {
+                    // 父级前路径为不为空，已创建文件夹
+                    if !is_exists {
+                        create_file(name);
                     }
                 }
             }
-            None => {
-                println!("parent = None");
-            }
+        }
+        None => {
+            println!("parent = None");
         }
     }
 }
